@@ -1,4 +1,4 @@
-package com.optile.cs.config;
+package com.optile.cs;
 
 import com.optile.cs.model.EventMessage;
 import com.optile.cs.model.StatusMessage;

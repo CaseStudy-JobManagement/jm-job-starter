@@ -1,37 +1,34 @@
 package com.optile.cs.client;
 
+import com.optile.cs.error.JobErrorCode;
+import com.optile.cs.error.JobException;
 import com.optile.cs.model.EventMessage;
 import com.optile.cs.model.JobStatus;
 import com.optile.cs.model.StatusMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.core.JmsTemplate;
 
-import javax.jms.Queue;
-
 public abstract class Job {
+
+    @Value("${job.statusQueue}")
+    private String statusQueue;
+
+    @Value("${job.eventQueue}")
+    private String eventQueue;
 
     @Autowired
     private JmsTemplate jmsTemplate;
 
-    @Autowired
-    @Qualifier("status")
-    private Queue statusQueue;
+    protected abstract void process(String jobId);
 
-    @Autowired
-    @Qualifier("event")
-    private Queue eventQueue;
-
-    private String jobId;
-
-    protected abstract void execute();
-
-    public void execute(String jobId) {
-        this.jobId = jobId;
+    public void execute(String jobId) throws JobException {
+        if(jobId == null && jobId.isEmpty())
+            throw new JobException(JobErrorCode.JOB_ERROR_001);
 
         this.jmsTemplate.convertAndSend(statusQueue, new StatusMessage(jobId, JobStatus.RUNNING));
         try {
-            this.execute();
+            this.process(jobId);
             this.jmsTemplate.convertAndSend(statusQueue, new StatusMessage(jobId, JobStatus.SUCCESS));
         } catch (Exception exception) {
             this.jmsTemplate.convertAndSend(eventQueue, new EventMessage(jobId, exception.getMessage()));
@@ -39,7 +36,7 @@ public abstract class Job {
         }
     }
 
-    public void log(String message) {
+    public void log(String jobId, String message) {
         this.jmsTemplate.convertAndSend(eventQueue, new EventMessage(jobId, message));
     }
 }

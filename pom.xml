@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.optile.cs</groupId>
     <artifactId>jm-job-starter</artifactId>
-    <version>1.0</version>
+    <version>1.0.0</version>
     <name>jm-job-starter</name>
     <description>Job starter project</description>
 

@@ -1,6 +1,6 @@
 package com.optile.cs.client;
 
-import com.optile.cs.error.JobErrorCode;
+import com.optile.cs.error.ErrorCode;
 import com.optile.cs.error.JobException;
 import com.optile.cs.model.EventMessage;
 import com.optile.cs.model.JobStatus;
@@ -11,24 +11,24 @@ import org.springframework.jms.core.JmsTemplate;
 
 public abstract class Job {
 
-    @Value("${job.statusQueue}")
+    @Value("${job.statusQueue:job-status}")
     private String statusQueue;
 
-    @Value("${job.eventQueue}")
+    @Value("${job.eventQueue:job-event}")
     private String eventQueue;
 
     @Autowired
     private JmsTemplate jmsTemplate;
 
-    protected abstract void process(String jobId);
+    protected abstract void process(String jobId, String... args) throws JobException;
 
-    public void execute(String jobId) throws JobException {
+    public void execute(String jobId, String... args) throws JobException {
         if(jobId == null && jobId.isEmpty())
-            throw new JobException(JobErrorCode.JOB_ERROR_001);
+            throw new JobException(ErrorCode.JOB_ERROR_001.getMessage());
 
         this.jmsTemplate.convertAndSend(statusQueue, new StatusMessage(jobId, JobStatus.RUNNING));
         try {
-            this.process(jobId);
+            this.process(jobId, args);
             this.jmsTemplate.convertAndSend(statusQueue, new StatusMessage(jobId, JobStatus.SUCCESS));
         } catch (Exception exception) {
             this.jmsTemplate.convertAndSend(eventQueue, new EventMessage(jobId, exception.getMessage()));

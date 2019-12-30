@@ -1,7 +1,0 @@
-spring:
-  activemq:
-    brokerUrl: tcp://localhost:61616
-
-job:
-  statusQueue: "job-status"
-  eventQueue: "job-event"

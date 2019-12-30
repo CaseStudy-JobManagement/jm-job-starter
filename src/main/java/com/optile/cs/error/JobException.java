@@ -4,9 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class JobException extends Exception {
-    private JobErrorCode jobErrorCode;
-
-    public JobException(JobErrorCode jobErrorCode) {
-        super(jobErrorCode.getMessage());
+    public JobException(String message) {
+        super(message);
     }
 }

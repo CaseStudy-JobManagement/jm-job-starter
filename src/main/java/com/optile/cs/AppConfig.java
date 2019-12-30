@@ -2,26 +2,35 @@ package com.optile.cs;
 
 import com.optile.cs.model.EventMessage;
 import com.optile.cs.model.StatusMessage;
-import org.apache.activemq.command.ActiveMQQueue;
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 
-import javax.jms.Queue;
 import java.util.HashMap;
 
 @Configuration
 public class AppConfig {
-    @Bean(name = "status")
-    public Queue statusQueue() {
-        return new ActiveMQQueue("job-status");
+    @Value("${spring.activemq.brokerUrl:tcp://localhost:61616}")
+    private String brokerUrl;
+
+    @Bean
+    public ActiveMQConnectionFactory connectionFactory() {
+        return new ActiveMQConnectionFactory() {{
+            setBrokerURL(brokerUrl);
+        }};
     }
 
-    @Bean(name = "event")
-    public Queue eventQueue() {
-        return new ActiveMQQueue("job-event");
+    @Bean
+    public JmsTemplate jmsTemplate() {
+        return new JmsTemplate() {{
+            setConnectionFactory(connectionFactory());
+            setMessageConverter(messageConverter());
+        }};
     }
 
     @Bean

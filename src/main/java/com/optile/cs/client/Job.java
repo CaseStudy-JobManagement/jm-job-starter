@@ -23,7 +23,7 @@ public abstract class Job {
     protected abstract void process(String jobId, String... args) throws JobException;
 
     public void execute(String jobId, String... args) throws JobException {
-        if(jobId == null && jobId.isEmpty())
+        if(jobId == null || jobId.isEmpty())
             throw new JobException(ErrorCode.JOB_ERROR_001.getMessage());
 
         this.jmsTemplate.convertAndSend(statusQueue, new StatusMessage(jobId, JobStatus.RUNNING));
